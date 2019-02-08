@@ -133,7 +133,7 @@ def evaluate(model, dataset, *, vocabs, lbls):
             total_records += 1
 
         x = x.transpose(1, 2)
-        loss = F.cross_entropy(x, labels, reduction='mean')
+        loss = F.cross_entropy(x, labels, ignore_index=0, reduction='mean')
         losses.append(loss.item())
 
     print(f'AVG loss: {sum(losses) / len(losses):6.4f}')
