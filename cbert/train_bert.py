@@ -25,6 +25,11 @@ for name, v in vocabs.items():
 import torch
 import torch.utils.data
 
+if torch.cuda.is_available():
+    DEVICE = torch.device('cuda')
+else:
+    DEVICE = torch.device('cpu')
+
 with open(f'{datadir}/eng.train.pickle', 'rb') as f:
     data_train = pickle.load(f)
 
@@ -49,7 +54,7 @@ def collate(batch):
         words[i,:x.size(0)] = x
         labels[i,:y.size(0)] = y
 
-    return words, labels
+    return words.to(DEVICE), labels.to(DEVICE)
 
 
 def get_entities(labels, *, labels_vocab):
@@ -187,6 +192,10 @@ model = BidiLstmBertModel(BERT_MODEL,
     labels_vocab_size=len(vocabs['labels']),
     num_layers=2
 )
+model.to(DEVICE)
+
+for p in model.bert.parameters():
+    p.requires_grad = False
 
 optimizer = torch.optim.SGD(model.parameters(), lr=1.5, momentum=0.0, weight_decay=0.000001)
 
