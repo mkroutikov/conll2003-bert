@@ -72,7 +72,7 @@ LABELS = sorted(set(x[2:] for x in vocabs['labels'].values if x not in ('<unk>',
 
 INFTY = 10000.0
 
-def error_analysis(model, dataset, *, vocabs, verbose):
+def error_analysis(model, dataset, *, vocabs, verbose=0):
     labels_vocab=vocabs['labels']
     words_vocab=vocabs['subwords']
 
@@ -111,7 +111,7 @@ def error_analysis(model, dataset, *, vocabs, verbose):
             fp += len(pred_entities - true_entities)
             fn = len(true_entities - pred_entities)
             if pred_entities != true_entities:
-                if verbose:
+                if verbose > 1:
                     wrds = words_vocab.convert_ids_to_tokens(words[i, :seqlens[i]].tolist())
                     true_lbls = [labels_vocab.decode(i) for i in true_labels]
                     print()
@@ -122,14 +122,16 @@ def error_analysis(model, dataset, *, vocabs, verbose):
             else:
                 hits += 1
 
-        accuracy = hits / (hits + miss + 1.e-6)
-        print(f'..Accuracy: {accuracy*100:8.4f}%')
+        if verbose:
+            accuracy = hits / (hits + miss + 1.e-6)
+            print(f'..Accuracy: {accuracy*100:8.4f}%')
 
-        prec = tp / (tp + fp + 1.e-8)
-        recall = tp / (tp + fn + 1.e-8)
-        f1 = 2 * prec * recall / (prec + recall + 1.e-8)
-        print('..Precision:', prec, 'Recall:', recall, 'F1:', f1)
+            prec = tp / (tp + fp + 1.e-8)
+            recall = tp / (tp + fn + 1.e-8)
+            f1 = 2 * prec * recall / (prec + recall + 1.e-8)
+            print('..Precision:', prec, 'Recall:', recall, 'F1:', f1)
 
+    print('***************')
     accuracy = hits / (hits + miss + 1.e-6)
     print(f'Accuracy: {accuracy*100:8.4f}%')
 
@@ -141,6 +143,6 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
 model = torch.load('best-conll.model', map_location=DEVICE)
 model.train(False)
-error_analysis(model, data_testa, vocabs=vocabs, verbose=False)
-error_analysis(model, data_testb, vocabs=vocabs, verbose=False)
+error_analysis(model, data_testa, vocabs=vocabs, verbose=1)
+error_analysis(model, data_testb, vocabs=vocabs, verbose=1)
 
