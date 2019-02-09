@@ -123,6 +123,6 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
 model = torch.load('best-conll.model', map_location=DEVICE)
 model.train(False)
-error_analysis(model, data_testa, vocabs=vocabs, verbose=False)
-error_analysis(model, data_testb, vocabs=vocabs, verbose=False)
+error_analysis(model, data_testa, vocabs=vocabs, verbose=True)
+error_analysis(model, data_testb, vocabs=vocabs, verbose=True)
 
