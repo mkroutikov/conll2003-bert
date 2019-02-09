@@ -104,7 +104,7 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
             true_entities = get_entities(true_labels, labels_vocab=labels_vocab)
             pred_entities = set(entities(pred_labels))
-            if pred_labels != true_labels:
+            if pred_entities != true_entities:
                 if verbose:
                     wrds = words_vocab.convert_ids_to_tokens(words[i, :seqlens[i]].tolist())
                     true_lbls = [labels_vocab.decode(i) for i in true_labels]
