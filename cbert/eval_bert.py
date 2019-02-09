@@ -97,7 +97,7 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
         for i in range(batch_size):
             true_labels = labels[i, 1:seqlens[i]-1].tolist()
-            pred_labels, _ = decode_bioes_logits(seqlens[i]-2, logits_factory=logits_factory_factory(x, i), labels=LABELS)
+            pred_labels, _ = decode_bioes_logits(seqlens[i].item()-2, logits_factory=logits_factory_factory(x, i), labels=LABELS)
 
             pred_entities = get_entities(pred_labels, labels_vocab=labels_vocab)
             true_entities = entities(pred_labels)
