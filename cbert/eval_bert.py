@@ -84,6 +84,10 @@ def error_analysis(model, dataset, *, vocabs, verbose):
             return logits[i,t+1, labels_vocab.encode(label)]
         return logits_factory
 
+    tp = 0
+    fp = 0
+    fn = 0
+
     miss = 0
     hits = 0
     for words, labels in torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate):
@@ -93,7 +97,6 @@ def error_analysis(model, dataset, *, vocabs, verbose):
         mask = (words > 0).long()
         seqlens = mask.sum(dim=1)
 
-        print(words.shape)
         x = model(words)
 
         pred = torch.argmax(x, dim=2)
@@ -104,6 +107,9 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
             true_entities = get_entities(true_labels, labels_vocab=labels_vocab)
             pred_entities = set(entities(pred_labels))
+            tp += len(true_entities & pred_entities)
+            fp += len(pred_entities - true_entities)
+            fn = len(true_entities - pred_entities)
             if pred_entities != true_entities:
                 if verbose:
                     wrds = words_vocab.convert_ids_to_tokens(words[i, :seqlens[i]].tolist())
@@ -118,6 +124,11 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
     accuracy = hits / (hits + miss + 1.e-6)
     print(f'Accuracy: {accuracy*100:8.4f}%')
+
+    prec = tp / (tp + fp + 1.e-8)
+    recall = tp / (tp + fn + 1.e-8)
+    f1 = 2 * prec * recall / (prec + recall + 1.e-8)
+    print('Precision:', prec, 'Recall:', recall, 'F1:', f1)
 
 
 model = torch.load('best-conll.model', map_location=DEVICE)
