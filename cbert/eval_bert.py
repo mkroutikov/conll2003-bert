@@ -122,6 +122,14 @@ def error_analysis(model, dataset, *, vocabs, verbose):
             else:
                 hits += 1
 
+        accuracy = hits / (hits + miss + 1.e-6)
+        print(f'..Accuracy: {accuracy*100:8.4f}%')
+
+        prec = tp / (tp + fp + 1.e-8)
+        recall = tp / (tp + fn + 1.e-8)
+        f1 = 2 * prec * recall / (prec + recall + 1.e-8)
+        print('..Precision:', prec, 'Recall:', recall, 'F1:', f1)
+
     accuracy = hits / (hits + miss + 1.e-6)
     print(f'Accuracy: {accuracy*100:8.4f}%')
 
@@ -133,6 +141,6 @@ def error_analysis(model, dataset, *, vocabs, verbose):
 
 model = torch.load('best-conll.model', map_location=DEVICE)
 model.train(False)
-error_analysis(model, data_testa, vocabs=vocabs, verbose=True)
-error_analysis(model, data_testb, vocabs=vocabs, verbose=True)
+error_analysis(model, data_testa, vocabs=vocabs, verbose=False)
+error_analysis(model, data_testb, vocabs=vocabs, verbose=False)
 
