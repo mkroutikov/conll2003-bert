@@ -8,6 +8,7 @@ from .preprocess_bert import load_vocabs
 from .bioes import entities, entities_jie_bioes
 import torch.nn.functional as F
 from .models import BidiLstmBertModel
+from .viterbi import decode_bioes_logits
 
 
 logging.basicConfig(level=logging.INFO)
