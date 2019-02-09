@@ -102,8 +102,8 @@ def error_analysis(model, dataset, *, vocabs, verbose):
             true_labels = labels[i, 1:seqlens[i]-1].tolist()
             _, pred_labels = decode_bioes_logits(seqlens[i].item()-2, logits_factory=logits_factory_factory(x, i), labels=LABELS)
 
-            pred_entities = get_entities(pred_labels, labels_vocab=labels_vocab)
-            true_entities = entities(pred_labels)
+            true_entities = get_entities(true_labels, labels_vocab=labels_vocab)
+            pred_entities = set(entities(pred_labels))
             if pred_labels != true_labels:
                 if verbose:
                     wrds = [words_vocab.decode(i) for i in words[i, :seqlens[i]].tolist()]
