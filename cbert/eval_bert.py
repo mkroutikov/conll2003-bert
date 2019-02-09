@@ -78,7 +78,7 @@ def error_analysis(model, dataset, *, vocabs, verbose):
     def logits_factory_factory(logits, i):
         def logits_factory(t, label):
             # t+1 because we skip leading [CLS]
-            return logits[i,t+1, label_vocab.encode(label)]
+            return logits[i,t+1, labels_vocab.encode(label)]
         return logits_factory
 
     miss = 0
