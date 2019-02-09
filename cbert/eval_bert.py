@@ -108,11 +108,10 @@ def error_analysis(model, dataset, *, vocabs, verbose):
                 if verbose:
                     wrds = words_vocab.convert_ids_to_tokens(words[i, :seqlens[i]].tolist())
                     true_lbls = [labels_vocab.decode(i) for i in true_labels]
-                    pred_lbls = [labels_vocab.decode(i) for i in pred_labels]
                     print()
                     print(wrds)
                     print(true_lbls)
-                    print(pred_lbls)
+                    print(pred_labels)
                 miss += 1
             else:
                 hits += 1
