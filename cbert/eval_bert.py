@@ -70,6 +70,7 @@ def get_entities(labels, *, labels_vocab):
 
 LABELS = sorted(set(x[2:] for x in vocabs['labels'].values if x not in ('<unk>', '<pad>', 'O')))
 
+INFTY = 10000.0
 
 def error_analysis(model, dataset, *, vocabs, verbose):
     labels_vocab=vocabs['labels']
@@ -78,6 +79,8 @@ def error_analysis(model, dataset, *, vocabs, verbose):
     def logits_factory_factory(logits, i):
         def logits_factory(t, label):
             # t+1 because we skip leading [CLS]
+            if label not in labels_vocab:
+                return -INFTY
             return logits[i,t+1, labels_vocab.encode(label)]
         return logits_factory
 
