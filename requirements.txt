@@ -1,2 +1,4 @@
 torch
 pytorch_pretrained_bert
+tensorboardX
+fire

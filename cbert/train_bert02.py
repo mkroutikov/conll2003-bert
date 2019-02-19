@@ -1,8 +1,8 @@
 import logging
 from types import SimpleNamespace as ns
-import torch.nn.functional as F
 import torch
-from .models import BidiLstmBertModel
+import torch.nn.functional as F
+from .models import BertTagger
 from .batcher import Batcher
 from .metrics import MetricManager, TokenAndRecordAccuracyBert, CrossEntropyLoss, F1ScoreBert
 from .feats_bert import FeatsBert
@@ -39,19 +39,13 @@ def train(
     testa_batches = Batcher(testa, batch_size=32).to(DEVICE)
     testb_batches = Batcher(testb, batch_size=32).to(DEVICE)
 
-    model = BidiLstmBertModel(
-        bert_model,
-        rnn_size=100,
-        labels_vocab_size=len(labels_vocab),
-        num_layers=2
-    ).to(DEVICE)
+    model = BertTagger(BERT_MODEL, labels_vocab_size=len(labels_vocab)).to(DEVICE)
 
     # for p in model.bert.parameters():
     #     p.requires_grad = False
 
     optimizer = torch.optim.SGD([
         {'params': model.bert.parameters(), 'lr': 0.00015},
-        {'params': model.rnn.parameters(), 'lr': 0.15},
         {'params': model.output.parameters(), 'lr': 0.15},
     ], lr=1.5, momentum=0.0, weight_decay=0.000001)
 

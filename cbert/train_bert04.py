@@ -1,7 +1,7 @@
 import logging
 from types import SimpleNamespace as ns
-import torch.nn.functional as F
 import torch
+import torch.nn.functional as F
 from .models import BidiLstmBertModel
 from .batcher import Batcher
 from .metrics import MetricManager, TokenAndRecordAccuracyBert, CrossEntropyLoss, F1ScoreBert
@@ -50,7 +50,7 @@ def train(
     #     p.requires_grad = False
 
     optimizer = torch.optim.SGD([
-        {'params': model.bert.parameters(), 'lr': 0.00015},
+        {'params': model.bert.parameters(), 'lr': 0.0015},
         {'params': model.rnn.parameters(), 'lr': 0.15},
         {'params': model.output.parameters(), 'lr': 0.15},
     ], lr=1.5, momentum=0.0, weight_decay=0.000001)

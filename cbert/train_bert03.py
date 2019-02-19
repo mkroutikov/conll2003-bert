@@ -2,10 +2,10 @@ import logging
 from types import SimpleNamespace as ns
 import torch.nn.functional as F
 import torch
-from .models import BidiLstmBertModel
+from .models import AwdLstmGlove
 from .batcher import Batcher
-from .metrics import MetricManager, TokenAndRecordAccuracyBert, CrossEntropyLoss, F1ScoreBert
-from .feats_bert import FeatsBert
+from .metrics import TokenAndRecordAccuracy, F1Score, CrossEntropyLoss, MetricManager
+from .feats import Feats
 from .util import read_conll2003, save_json, SummaryWriter
 from tqdm import tqdm, trange
 
@@ -17,7 +17,6 @@ def train(
     *,
     datadir = 'data/conll2003',
     epochs  = 100,
-    bert_model = 'bert-base-multilingual-cased',
 ):
     save_json(locals(), f'{traindir}/params.json')
 
@@ -29,41 +28,35 @@ def train(
     testa_data = list(read_conll2003(f'{datadir}/eng.testa'))
     testb_data = list(read_conll2003(f'{datadir}/eng.testb'))
 
-    feats = FeatsBert(bert_model=bert_model)
+    feats = Feats()
     train, testa, testb = feats.encode(train_data, testa_data, testb_data)
     feats.save(traindir)  # save vocabularies
 
+    words_vocab = feats.vocab['words']
     labels_vocab = feats.vocab['labels']
 
-    train_batches = Batcher(train, batch_size=10, shuffle=True, max_seqlen=60).to(DEVICE)  # BERT needs to limit seq length (OOM)
+    train_batches = Batcher(train, batch_size=32, shuffle=True).to(DEVICE)
     testa_batches = Batcher(testa, batch_size=32).to(DEVICE)
     testb_batches = Batcher(testb, batch_size=32).to(DEVICE)
 
-    model = BidiLstmBertModel(
-        bert_model,
-        rnn_size=100,
+    model = AwdLstmGlove(
+        glove_filename='glove/glove.6B.100d.txt',
+        words_vocab=words_vocab,
         labels_vocab_size=len(labels_vocab),
-        num_layers=2
+        num_layers=1
     ).to(DEVICE)
 
-    # for p in model.bert.parameters():
-    #     p.requires_grad = False
-
-    optimizer = torch.optim.SGD([
-        {'params': model.bert.parameters(), 'lr': 0.00015},
-        {'params': model.rnn.parameters(), 'lr': 0.15},
-        {'params': model.output.parameters(), 'lr': 0.15},
-    ], lr=1.5, momentum=0.0, weight_decay=0.000001)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1.5, momentum=0.0, weight_decay=0.000001)
 
     schedule = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: 1. / (1. + 0.05 * epoch))
 
     eval_metric = MetricManager({
-        'acc'   : TokenAndRecordAccuracyBert(),
-        'entity': F1ScoreBert(labels_vocab=labels_vocab),
-        'loss'  : CrossEntropyLoss(),
+        'acc': TokenAndRecordAccuracy(),
+        'entity': F1Score(labels_vocab=labels_vocab),
+        'loss': CrossEntropyLoss(),
     })
     train_metric = MetricManager({
-        'acc': TokenAndRecordAccuracyBert(),
+        'acc': TokenAndRecordAccuracy()
     })
 
     def cross_entropy(x, labels):
@@ -98,23 +91,23 @@ def train(
                 )
                 summary_writer['train'].add_scalar_metric(summ, global_step=global_step)
 
-        with torch.no_grad():
-            model.train(False)
-            eval_metric.reset().update((model(x), y) for x,y in tqdm(testa_batches, desc='dev'))
-            summ = eval_metric.summary
+    with torch.no_grad():
+        model.train(False)
+        eval_metric.reset().update((model(x), y) for x,y in tqdm(testa_batches, desc='dev'))
+        summ = eval_metric.summary
 
-            f1 = summ['entity.f1']
-            if f1 > best.f1:
-                best.f1 = f1
-                best.epoch = epoch
-                torch.save(model, f'{traindir}/model.pickle')
+        f1 = summ['entity.f1']
+        if f1 > best.f1:
+            best.f1 = f1
+            best.epoch = epoch
+            torch.save(model, f'{traindir}/model.pickle')
 
-            tqdm.write(
-                f'Dev: loss: {summ["loss.loss"]:6.4f}, tacc: {summ["acc.tacc"]:6.4f}, racc: {summ["acc.racc"]:6.4f}, '
-                f'entity.f1: {summ["entity.f1"]:6.4f}, best.f1: {best.f1:6.4f} at epoch {best.epoch}'
-            )
-            summary_writer['dev'].add_scalar_metric(summ, global_step=global_step)
-            model.train(True)
+        tqdm.write(
+            f'Dev: loss: {summ["loss.loss"]:6.4f}, tacc: {summ["acc.tacc"]:6.4f}, racc: {summ["acc.racc"]:6.4f}, '
+            f'entity.f1: {summ["entity.f1"]:6.4f}, best.f1: {best.f1:6.4f} at epoch {best.epoch}'
+        )
+        summary_writer['dev'].add_scalar_metric(summ, global_step=global_step)
+        model.train(True)
 
     model = torch.load(f'{traindir}/model.pickle')
 
@@ -122,9 +115,9 @@ def train(
         model.train(False)
 
         metric = MetricManager({
-            'acc'    : TokenAndRecordAccuracyBert(),
-            'entity' : F1ScoreBert(labels_vocab=labels_vocab),
-            'viterbi': F1ScoreBert(labels_vocab=labels_vocab, entity_decoder='viterbi'),  # this is sloow
+            'acc'    : TokenAndRecordAccuracy(),
+            'entity' : F1Score(labels_vocab=labels_vocab),
+            'viterbi': F1Score(labels_vocab=labels_vocab, entity_decoder='viterbi'),  # this is sloow
             'loss'   : CrossEntropyLoss(),
         })
 
