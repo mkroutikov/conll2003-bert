@@ -193,6 +193,7 @@ class AwdLstmGlove(torch.nn.Module):
         embed_dropout=0.1,
         weight_dropout=0.1,
         qrnn=False,  # this requires CUDA
+        bidirectional=True,
         output_dropout=0.5,
     ):
         torch.nn.Module.__init__(self)
@@ -213,7 +214,8 @@ class AwdLstmGlove(torch.nn.Module):
             input_p=input_dropout,
             embed_p=embed_dropout,
             weight_p=weight_dropout,
-            qrnn=qrnn
+            qrnn=qrnn,
+            bidir=bidirectional,
         )
         self.awd.encoder.weight.data.copy_(torch.tensor(glove_embedding))
 
