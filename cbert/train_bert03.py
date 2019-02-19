@@ -18,6 +18,7 @@ def train(
     datadir = 'data/conll2003',
     epochs  = 100,
     batch_size = 10,
+    num_layers = 2,
 ):
     save_json(locals(), f'{traindir}/params.json')
 
@@ -44,7 +45,7 @@ def train(
         glove_filename='glove/glove.6B.100d.txt',
         words_vocab=words_vocab,
         labels_vocab_size=len(labels_vocab),
-        num_layers=1
+        num_layers=num_layers,
     ).to(DEVICE)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=1.5, momentum=0.0, weight_decay=0.000001)
