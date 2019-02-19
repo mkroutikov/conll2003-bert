@@ -325,7 +325,7 @@ class CrossEntropyLoss(Metric):
         return self
 
 
-class MetricManager(Metric):
+class MetricSet(Metric):
 
     def __init__(self, *configs):
         self._configs = configs

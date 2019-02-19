@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch
 from .models import BidiLstmGloveModel
 from .batcher import Batcher
-from .metrics import TokenAndRecordAccuracy, F1Score, CrossEntropyLoss, MetricManager
+from .metrics import TokenAndRecordAccuracy, F1Score, CrossEntropyLoss, MetricSet
 from .feats import Feats
 from .util import read_conll2003, save_json, SummaryWriter
 from tqdm import tqdm, trange
@@ -50,12 +50,12 @@ def train(
 
     schedule = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: 1. / (1. + 0.05 * epoch))
 
-    eval_metric = MetricManager({
+    eval_metric = MetricSet({
         'acc': TokenAndRecordAccuracy(),
         'entity': F1Score(labels_vocab=labels_vocab),
         'loss': CrossEntropyLoss(),
     })
-    train_metric = MetricManager({
+    train_metric = MetricSet({
         'acc': TokenAndRecordAccuracy()
     })
 
@@ -114,7 +114,7 @@ def train(
     with torch.no_grad():
         model.train(False)
 
-        metric = MetricManager({
+        metric = MetricSet({
             'acc'    : TokenAndRecordAccuracy(),
             'entity' : F1Score(labels_vocab=labels_vocab),
             'viterbi': F1Score(labels_vocab=labels_vocab, entity_decoder='viterbi'),  # this is sloow

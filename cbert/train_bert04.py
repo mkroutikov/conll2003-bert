@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from .models import BidiLstmBertModel
 from .batcher import Batcher
-from .metrics import MetricManager, TokenAndRecordAccuracyBert, CrossEntropyLoss, F1ScoreBert
+from .metrics import MetricSet, TokenAndRecordAccuracyBert, CrossEntropyLoss, F1ScoreBert
 from .feats_bert import FeatsBert
 from .util import read_conll2003, save_json, SummaryWriter
 from tqdm import tqdm, trange
@@ -57,12 +57,12 @@ def train(
 
     schedule = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: 1. / (1. + 0.05 * epoch))
 
-    eval_metric = MetricManager({
+    eval_metric = MetricSet({
         'acc'   : TokenAndRecordAccuracyBert(),
         'entity': F1ScoreBert(labels_vocab=labels_vocab),
         'loss'  : CrossEntropyLoss(),
     })
-    train_metric = MetricManager({
+    train_metric = MetricSet({
         'acc': TokenAndRecordAccuracyBert(),
     })
 
@@ -121,7 +121,7 @@ def train(
     with torch.no_grad():
         model.train(False)
 
-        metric = MetricManager({
+        metric = MetricSet({
             'acc'    : TokenAndRecordAccuracyBert(),
             'entity' : F1ScoreBert(labels_vocab=labels_vocab),
             'viterbi': F1ScoreBert(labels_vocab=labels_vocab, entity_decoder='viterbi'),  # this is sloow

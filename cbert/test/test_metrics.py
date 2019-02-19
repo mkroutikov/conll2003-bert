@@ -1,7 +1,7 @@
 import torch
 import pytest
 import numpy as np
-from ..metrics import TokenAndRecordAccuracy, F1Score, MetricManager
+from ..metrics import TokenAndRecordAccuracy, F1Score, MetricSet
 from ..metrics import TokenAndRecordAccuracyBert, F1ScoreBert
 from ..vocab import Vocab
 from ..metrics import Ema, Mean, massage_bert_logits_and_labels
@@ -146,14 +146,14 @@ def test_metric_manager():
 
     labels_vocab = Vocab(['<pad>', '<unk>', 'O', 'B-x', 'I-x'])
 
-    manager = MetricManager({
+    metric = MetricSet({
         'acc': TokenAndRecordAccuracy(),
         'entity': F1Score(labels_vocab=labels_vocab),
     })
 
-    manager.append(logits, labels)
+    metric.append(logits, labels)
 
-    assert manager.summary == {
+    assert metric.summary == {
         'acc.racc': 0.0,
         'acc.tacc': pytest.approx(0.25),
         'entity.f1': 0.0,

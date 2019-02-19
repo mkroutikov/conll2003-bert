@@ -2,16 +2,14 @@ import torch
 import torch.utils.data
 
 
-class Batcher:
-    ''' A thin wrapper around DataLoader, specifically for sequence batches '''
+class BatcherBase:
+    ''' A thin wrapper around DataLoader, uses abstract collation '''
 
-    def __init__(self, dataset, batch_size, shuffle=False, max_seqlen=100000, sort=False, device=None):
+    def __init__(self, dataset, batch_size, shuffle=False):
         self._dataset = dataset
         self._batch_size = batch_size
         self._shuffle = shuffle
-        self._max_seqlen = max_seqlen
-        self._sort = sort
-        self._device = device
+        self._device = None
 
     def __iter__(self):
         return iter(torch.utils.data.DataLoader(
@@ -24,6 +22,18 @@ class Batcher:
     def to(self, device):
         self._device = device
         return self
+
+    def _collate(self, batch):
+        raise NotImplementedError()
+
+
+class Batcher(BatcherBase):
+    '''Batcher for variable-length sequences'''
+
+    def __init__(self, dataset, batch_size, shuffle=False, max_seqlen=100000, sort=False):
+        BatcherBase.__init__(self, dataset, batch_size, shuffle)
+        self._max_seqlen = max_seqlen
+        self._sort = sort
 
     def _collate(self, batch):
         if self._sort:
