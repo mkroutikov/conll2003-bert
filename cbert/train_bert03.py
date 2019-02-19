@@ -18,7 +18,9 @@ def train(
     datadir = 'data/conll2003',
     epochs  = 100,
     batch_size = 10,
-    num_layers = 2,
+    num_layers = 1,
+    embed_dropout=0.0,
+    weight_dropout=0.0,
 ):
     save_json(locals(), f'{traindir}/params.json')
 
@@ -46,6 +48,8 @@ def train(
         words_vocab=words_vocab,
         labels_vocab_size=len(labels_vocab),
         num_layers=num_layers,
+        embed_dropout=embed_dropout,
+        weight_dropout=weight_dropout,
     ).to(DEVICE)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=1.5, momentum=0.0, weight_decay=0.000001)
