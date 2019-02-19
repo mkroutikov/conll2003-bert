@@ -92,23 +92,23 @@ def train(
                 )
                 summary_writer['train'].add_scalar_metric(summ, global_step=global_step)
 
-    with torch.no_grad():
-        model.train(False)
-        eval_metric.reset().update((model(x), y) for x,y in tqdm(testa_batches, desc='dev'))
-        summ = eval_metric.summary
+        with torch.no_grad():
+            model.train(False)
+            eval_metric.reset().update((model(x), y) for x,y in tqdm(testa_batches, desc='dev'))
+            summ = eval_metric.summary
 
-        f1 = summ['entity.f1']
-        if f1 > best.f1:
-            best.f1 = f1
-            best.epoch = epoch
-            torch.save(model, f'{traindir}/model.pickle')
+            f1 = summ['entity.f1']
+            if f1 > best.f1:
+                best.f1 = f1
+                best.epoch = epoch
+                torch.save(model, f'{traindir}/model.pickle')
 
-        tqdm.write(
-            f'Dev: loss: {summ["loss.loss"]:6.4f}, tacc: {summ["acc.tacc"]:6.4f}, racc: {summ["acc.racc"]:6.4f}, '
-            f'entity.f1: {summ["entity.f1"]:6.4f}, best.f1: {best.f1:6.4f} at epoch {best.epoch}'
-        )
-        summary_writer['dev'].add_scalar_metric(summ, global_step=global_step)
-        model.train(True)
+            tqdm.write(
+                f'Dev: loss: {summ["loss.loss"]:6.4f}, tacc: {summ["acc.tacc"]:6.4f}, racc: {summ["acc.racc"]:6.4f}, '
+                f'entity.f1: {summ["entity.f1"]:6.4f}, best.f1: {best.f1:6.4f} at epoch {best.epoch}'
+            )
+            summary_writer['dev'].add_scalar_metric(summ, global_step=global_step)
+            model.train(True)
 
     model = torch.load(f'{traindir}/model.pickle')
 
