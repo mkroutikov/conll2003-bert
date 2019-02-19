@@ -19,7 +19,8 @@ def train(
     epochs  = 100,
     batch_size = 10,
     num_layers = 1,
-    embed_dropout=0.0,
+    input_dropout=0.0,
+    embed_dropout=0.5,
     weight_dropout=0.0,
 ):
     save_json(locals(), f'{traindir}/params.json')
@@ -48,6 +49,7 @@ def train(
         words_vocab=words_vocab,
         labels_vocab_size=len(labels_vocab),
         num_layers=num_layers,
+        input_dropout=input_dropout,
         embed_dropout=embed_dropout,
         weight_dropout=weight_dropout,
     ).to(DEVICE)
