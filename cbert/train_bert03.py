@@ -17,6 +17,7 @@ def train(
     *,
     datadir = 'data/conll2003',
     epochs  = 100,
+    batch_size = 10,
 ):
     save_json(locals(), f'{traindir}/params.json')
 
@@ -35,7 +36,7 @@ def train(
     words_vocab = feats.vocab['words']
     labels_vocab = feats.vocab['labels']
 
-    train_batches = Batcher(train, batch_size=32, shuffle=True).to(DEVICE)
+    train_batches = Batcher(train, batch_size=batch_size, shuffle=True).to(DEVICE)
     testa_batches = Batcher(testa, batch_size=32).to(DEVICE)
     testb_batches = Batcher(testb, batch_size=32).to(DEVICE)
 
