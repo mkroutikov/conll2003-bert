@@ -39,7 +39,7 @@ def train(
     testa_batches = Batcher(testa, batch_size=32).to(DEVICE)
     testb_batches = Batcher(testb, batch_size=32).to(DEVICE)
 
-    model = BertTagger(BERT_MODEL, labels_vocab_size=len(labels_vocab)).to(DEVICE)
+    model = BertTagger(bert_model, labels_vocab_size=len(labels_vocab)).to(DEVICE)
 
     # for p in model.bert.parameters():
     #     p.requires_grad = False
