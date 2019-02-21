@@ -127,8 +127,9 @@ def cross_entropy(x, labels):
         tqdm.write('Evaluating the best model on testb')
         metric.reset().update((model(x), y) for x,y in tqdm(testb_batches, desc="test"))
         tqdm.write(repr(metric.summary))
-        summary_writer['final-train'].add_scalar_metric(metric.summary)
+        summary_writer['final-test'].add_scalar_metric(metric.summary)
 
+    summary_writer.close()
 
 if __name__ == '__main__':
     import fire

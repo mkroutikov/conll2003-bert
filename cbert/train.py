@@ -6,8 +6,10 @@ from .models import BidiLstmGloveModel
 from .batcher import Batcher
 from .metrics import TokenAndRecordAccuracy, F1Score, CrossEntropyLoss, MetricSet
 from .feats import Feats
-from .util import read_conll2003, save_json, SummaryWriter
+from .util import read_conll2003, save_json, save, load
+from .summary import SummaryWriter
 from tqdm import tqdm, trange
+from cbert import io
 
 
 logging.basicConfig(level=logging.INFO)
@@ -101,7 +103,7 @@ def train(
             if f1 > best.f1:
                 best.f1 = f1
                 best.epoch = epoch
-                torch.save(model, f'{traindir}/model.pickle')
+                save(model, f'{traindir}/model.pickle')
 
             tqdm.write(
                 f'Dev: loss: {summ["loss.loss"]:6.4f}, tacc: {summ["acc.tacc"]:6.4f}, racc: {summ["acc.racc"]:6.4f}, '
@@ -110,7 +112,7 @@ def train(
             summary_writer['dev'].add_scalar_metric(summ, global_step=global_step)
             model.train(True)
 
-    model = torch.load(f'{traindir}/model.pickle')
+    model = load(f'{traindir}/model.pickle')
 
     with torch.no_grad():
         model.train(False)
